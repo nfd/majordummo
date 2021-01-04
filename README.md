@@ -16,6 +16,7 @@ Features
  * Accepts mail
  * Resends it to a list of people
  * Drops emails if they're sent by non-members (optional)
+ * Rate-limits individual posters
  * Adds Reply-To header (optional)
  * Writes messages and delivery status to the filesystem
  * Logs everything
@@ -43,6 +44,9 @@ change all of it. Copy `config-example.json` to `config.json` and customise it. 
  * `reject_non_recipients`: messages from non-list members will be dropped. The sender will not be notified, but the
    action is logged. Recommended.
  * `set_headers`: A list of headers to replace (if they exist) or add (if they don't) to outgoing messages.
+ * `db`: Location of the database used to store rate limiting information.
+ * `per_user_ratelimit_secs`: The minimum time in seconds allowed between posts from the same user to the list. Indended
+   to stop mail loops, not hyperactive humans.
  * `archive_dir`: A directory name to write emails and delivery status. Can be set to `null` if you don't want archives.
  * `smtp`: Mail server details. You will want to change `mail_from`.
  * `logging`: A Python logging configuration -- note that `logging/handlers/file/filename` is a filename to write logs

@@ -7,6 +7,8 @@
 		["List-Id", "Mailing List Name <mailinglist@example.com>"],
 		["List-Unsubscribe", "<mailto:yourname@example.com>"]
 	],
+	"db": "/path/to/db.sqlite",
+	"per_user_ratelimit_secs": 60,
 	"archive_dir": "/path/to/archive-dir",
 	"smtp": {
 		"host": "localhost",

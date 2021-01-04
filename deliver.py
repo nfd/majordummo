@@ -9,6 +9,7 @@ import logging.config
 import os
 import sys
 import smtplib
+import sqlite3
 import time
 
 logging.basicConfig(level="INFO")
@@ -21,6 +22,8 @@ class Config(dict):
         self['set_headers'] = []
         self['header_whitelist'] = {'subject', 'received', 'mime-version', 'date', 'from', 'to', 'x-sender',
                                     'user-agent', 'content-type', 'content-transfer-encoding'}
+        self['db'] = None
+        self['per_user_ratelimit_secs'] = 60
         self['archive_dir'] = None
         self['smtp'] = {'host': 'localhost', 'port': 25}
         self['logging'] = {}
@@ -53,6 +56,7 @@ class Archive:
             return
 
         self._create_and_write('.txt', functools.partial(self._write, bytes(message)))
+        logger.info("Archived message with base %s", self._pathname_base)
 
     def _write(self, payload, path):
         with open(path, 'wb') as handle:
@@ -89,6 +93,40 @@ class Archive:
                 raise FileExistsError()
         else:
             func(os.path.join(self._dir, self._pathname_base + ext))
+
+class DB:
+    def __init__(self):
+        self._conn = None
+
+    def __enter__(self):
+        self._conn = sqlite3.connect(config['db'])
+        self._conn.execute('CREATE TABLE IF NOT EXISTS most_recent_post(recipient TEXT PRIMARY KEY, timestamp REAL)')
+        return self
+
+    def __exit__(self, exc_type, exc_value, tb):
+        try:
+            self._conn.close()
+        except Exception:
+            logging.exception("While closing database")
+
+        self._conn = None
+
+    def is_rate_limited(self, recipient):
+        with self._conn:
+            cur = self._conn.cursor()
+            cur.execute('SELECT timestamp FROM most_recent_post WHERE recipient=?', (recipient,))
+            results = cur.fetchone()
+        if results:
+            timestamp = results[0]
+        else:
+            timestamp = 0
+
+        return timestamp + config['per_user_ratelimit_secs'] > time.time()
+
+    def set_did_just_post(self, recipient):
+        with self._conn:
+            self._conn.execute('REPLACE INTO most_recent_post(recipient, timestamp) VALUES (?, ?)',
+                               (recipient, time.time()))
 
 class Outgoing:
     def __enter__(self):
@@ -129,12 +167,16 @@ class Outgoing:
 
         return True
 
-def _deliver_message(archive, message):
+def _deliver_message(archive, db, message):
     " Deliver email.message.Message object. "
     sender_name, sender_email = email.utils.parseaddr(message['From'])
 
     if config['reject_non_recipients'] and sender_email not in config['recipients']:
         logging.warn("Not sending message from %s because they're not a list member.", sender_email)
+        return
+
+    if db.is_rate_limited(sender_email):
+        logging.warning("Not sending message from %s because they are rate limited.", sender_email)
         return
 
     for header in message:
@@ -151,6 +193,8 @@ def _deliver_message(archive, message):
     with Outgoing() as outgoing:
         succeeded, failed = outgoing.send(message, config['recipients'])
 
+    db.set_did_just_post(sender_email)
+
     if failed:
         logging.warning("Messages failed for %s", failed)
         archive.log_failed(failed)
@@ -166,7 +210,8 @@ def deliver():
 
     message = email.parser.BytesParser().parsebytes(message_bytes)
     logging.debug("Original message: %s", message)
-    return _deliver_message(archive, message)
+    with DB() as db:
+        return _deliver_message(archive, db, message)
 
 def main():
     global config
