@@ -1,0 +1,44 @@
+{
+	"recipients": ["someone@example.com", "someonelese@example.com"],
+	"reject_non_recipients": true,
+	"set_headers": [
+		["Reply-To", "mailinglist@example.com"],
+		["Return-Path", "mailinglist-bounces@example.com"],
+		["List-Id", "Mailing List Name <mailinglist@example.com>"],
+		["List-Unsubscribe", "<mailto:yourname@example.com>"]
+	],
+	"archive_dir": "/path/to/archive-dir",
+	"smtp": {
+		"host": "localhost",
+		"port": 25,
+		"mail_from": "mailinglist@example.com"
+	},
+	"logging": {
+		"version": 1,
+		"disable_existing_loggers": true,
+		"formatters": {
+			"brief": {
+				"class": "logging.Formatter",
+				"format": "%(asctime)s: %(levelname)s: %(name)s: %(message)s"
+			}
+		},
+		"handlers": {
+			"console":{
+				"level": "DEBUG",
+				"class": "logging.StreamHandler",
+				"formatter": "brief",
+				"stream" : "ext://sys.stdout"
+			},
+			"file": {
+				"level": "DEBUG",
+				"class": "logging.FileHandler",
+				"filename": "/path/to/logfile",
+				"formatter": "brief"
+			}
+		},
+		"root": {
+			"handlers": ["file"],
+			"level": "DEBUG"
+		}
+	}
+}
