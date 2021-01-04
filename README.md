@@ -70,7 +70,7 @@ majordummo?
 
 You can test the configuration by running deliver.py directly with an email:
 
-    cat email.txt | python3 deliver.py --config /path/to/config.json
+    python3 deliver.py --config /path/to/config.json <email.txt
 
 If that works, then send a test email to the list. Your MDA will log message delivery, so check those logs first. After
 that, check the log file you've configured in your `config.json`.
