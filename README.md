@@ -52,7 +52,7 @@ change all of it. Copy `config-example.json` to `config.json` and customise it. 
  * `logging`: A Python logging configuration -- note that `logging/handlers/file/filename` is a filename to write logs
    to.
 
-Make sure you've set `archive_dir` and `logging/handlers/file/filename` to valid paths which are accessible by the user
+Make sure you've set `archive_dir`, `db`, and `logging/handlers/file/filename` to valid paths which are accessible by the user
 running `deliver.py` (see "Running as a different user").
 
 Running as a different user
