@@ -30,7 +30,7 @@ Installation
 After creating a configuration file, create an account, or virtual alias, for the mailing list name, and set deliver.py
 to run when mail is delivered to that account.
 
-There are plenty of ways to do this. For example, you could "|/path/to/deliver.py --deliver --config /path/to/config" in
+There are plenty of ways to do this. For example, you could "|/path/to/deliver.py --config /path/to/config" in
 /etc/aliases, or you could run it as part of a set of Procmail rules, or you could configure the Postfix pipe delivery
 agent to backend on to it, or...
 
