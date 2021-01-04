@@ -21,7 +21,8 @@ class Config(dict):
         self['reject_non_recipients'] = True
         self['set_headers'] = []
         self['header_whitelist'] = {'subject', 'received', 'mime-version', 'date', 'from', 'to', 'x-sender',
-                                    'user-agent', 'content-type', 'content-transfer-encoding'}
+                                    'user-agent', 'content-type', 'content-transfer-encoding',
+                                    'x-gm-message-state', 'x-google-smtp-source', 'x-received'}
         self['db'] = None
         self['per_user_ratelimit_secs'] = 60
         self['archive_dir'] = None
