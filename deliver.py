@@ -20,9 +20,6 @@ class Config(dict):
         self['recipients'] = set()
         self['reject_non_recipients'] = True
         self['set_headers'] = []
-        self['header_whitelist'] = {'subject', 'received', 'mime-version', 'date', 'from', 'to', 'x-sender',
-                                    'user-agent', 'content-type', 'content-transfer-encoding',
-                                    'x-gm-message-state', 'x-google-smtp-source', 'x-received'}
         self['db'] = None
         self['per_user_ratelimit_secs'] = 60
         self['archive_dir'] = None
@@ -179,10 +176,6 @@ def _deliver_message(archive, db, message):
     if db.is_rate_limited(sender_email):
         logging.warning("Not sending message from %s because they are rate limited.", sender_email)
         return
-
-    for header in message:
-        if header.lower() not in config['header_whitelist']:
-            del message[header]
 
     for header, value in config['set_headers']:
         del message[header]
